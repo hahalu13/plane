@@ -30,7 +30,7 @@ const ProjectInsights = observer(function ProjectInsights() {
     useAnalytics();
 
   const { data: projectInsightsData, isLoading: isLoadingProjectInsight } = useSWR(
-    `radar-chart-project-insights-${workspaceSlug}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isPeekView}`,
+    `radar-chart-project-insights-${workspaceSlug}-${selectedDuration}-${selectedProjects?.join(',') || ''}-${selectedCycle || ''}-${selectedModule || ''}-${isPeekView}`,
     () =>
       analyticsService.getAdvanceAnalyticsCharts<TChartData<string, string>[]>(
         workspaceSlug,
@@ -71,7 +71,7 @@ const ProjectInsights = observer(function ProjectInsights() {
                 radars={[
                   {
                     key: "count",
-                    name: "Count",
+                    name: t("analytics.common.count"),
                     fill: "var(--text-color-accent-primary)",
                     stroke: "var(--text-color-accent-primary)",
                     fillOpacity: 0.6,

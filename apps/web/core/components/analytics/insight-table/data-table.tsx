@@ -5,6 +5,7 @@ import type {
   SortingState,
   VisibilityState,
   Table as TanstackTable,
+  PaginationState,
 } from "@tanstack/react-table";
 import {
   flexRender,
@@ -13,12 +14,14 @@ import {
   getFacetedUniqueValues,
   getFilteredRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
-import { SearchIcon, CloseIcon } from "@plane/propel/icons";
+import { SearchIcon, CloseIcon, ChevronLeftIcon, ChevronRightIcon } from "@plane/propel/icons";
+import { Button } from "@plane/propel/button";
 // plane package imports
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@plane/propel/table";
 import { cn } from "@plane/utils";
@@ -29,13 +32,27 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchPlaceholder: string;
   actions?: (table: TanstackTable<TData>) => React.ReactNode;
+  enablePagination?: boolean;
+  pageSize?: number;
 }
 
-export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, actions }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ 
+  columns, 
+  data, 
+  searchPlaceholder, 
+  actions,
+  enablePagination = false,
+  pageSize = 10,
+}: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: pageSize,
+  });
+  const [globalFilter, setGlobalFilter] = React.useState("");
   const { t } = useTranslation();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
@@ -48,14 +65,28 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
       columnVisibility,
       rowSelection,
       columnFilters,
+      globalFilter,
+      ...(enablePagination ? { pagination } : {}),
     },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, columnId, filterValue) => {
+      // Get the cell value and convert to string for searching
+      const cellValue = row.getValue(columnId);
+      const stringValue = String(cellValue || '').toLowerCase();
+      const searchValue = String(filterValue || '').toLowerCase();
+
+      return stringValue.includes(searchValue);
+    },
+    ...(enablePagination ? { onPaginationChange: setPagination } : {}),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
+    ...(enablePagination ? { manualPagination: false } : {}),
   });
 
   return (
@@ -91,11 +122,10 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
             <input
               ref={inputRef}
               className="w-full max-w-[234px] border-none bg-transparent text-13 text-primary placeholder:text-placeholder focus:outline-none"
-              placeholder="Search"
-              value={table.getColumn(table.getHeaderGroups()?.[0]?.headers?.[0]?.id)?.getFilterValue() as string}
+              placeholder={searchPlaceholder || t("analytics.common.search")}
+              value={globalFilter}
               onChange={(e) => {
-                const columnId = table.getHeaderGroups()?.[0]?.headers?.[0]?.id;
-                if (columnId) table.getColumn(columnId)?.setFilterValue(e.target.value);
+                setGlobalFilter(e.target.value);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -108,10 +138,7 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
                 type="button"
                 className="grid place-items-center"
                 onClick={() => {
-                  const columnId = table.getHeaderGroups()?.[0]?.headers?.[0]?.id;
-                  if (columnId) {
-                    table.getColumn(columnId)?.setFilterValue("");
-                  }
+                  setGlobalFilter("");
                   setIsSearchOpen(false);
                 }}
               >
@@ -164,6 +191,71 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {enablePagination && table.getPageCount() > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t-[0.5px] border-subtle">
+          <div className="flex items-center gap-2 text-13 text-secondary">
+            <span>
+              {t("analytics.common.showing") || "Showing"} {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} -{" "}
+              {Math.min(
+                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                table.getFilteredRowModel().rows.length
+              )}{" "}
+              {t("analytics.common.of") || "of"} {table.getFilteredRowModel().rows.length}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              prependIcon={<ChevronLeftIcon className="h-4 w-4" />}
+            >
+              {t("common.previous") || "Previous"}
+            </Button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
+                const pageIndex = table.getState().pagination.pageIndex;
+                const totalPages = table.getPageCount();
+                let pageNum: number;
+                
+                if (totalPages <= 5) {
+                  pageNum = i;
+                } else if (pageIndex < 3) {
+                  pageNum = i;
+                } else if (pageIndex > totalPages - 4) {
+                  pageNum = totalPages - 5 + i;
+                } else {
+                  pageNum = pageIndex - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageIndex === pageNum ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => table.setPageIndex(pageNum)}
+                    className="min-w-[32px]"
+                  >
+                    {pageNum + 1}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              appendIcon={<ChevronRightIcon className="h-4 w-4" />}
+            >
+              {t("common.next") || "Next"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

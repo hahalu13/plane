@@ -9,7 +9,7 @@ import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 // hooks
 import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
 // constants
-import { BLOCK_HEIGHT } from "../constants";
+import { BLOCK_HEIGHT, DEFAULT_BLOCK_WIDTH } from "../constants";
 // components
 import { ChartDraggable } from "../helpers";
 import { useGanttResizable } from "../helpers/blockResizables/use-gantt-resizable";
@@ -57,6 +57,10 @@ export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
 
   if (!block.data) return null;
 
+  // Use default values if position is not calculated yet
+  const marginLeft = block.position?.marginLeft ?? 0;
+  const width = block.position?.width ?? DEFAULT_BLOCK_WIDTH;
+
   return (
     <div
       className={cn("relative z-[5]", {
@@ -67,8 +71,8 @@ export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
       ref={resizableRef}
       style={{
         height: `${BLOCK_HEIGHT}px`,
-        marginLeft: `${block.position?.marginLeft}px`,
-        width: `${block.position?.width}px`,
+        marginLeft: `${marginLeft}px`,
+        width: `${width}px`,
       }}
     >
       {isBlockVisibleOnChart && (

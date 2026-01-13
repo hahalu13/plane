@@ -5,12 +5,33 @@ import { useAnalytics } from "@/hooks/store/use-analytics";
 import { useProject } from "@/hooks/store/use-project";
 // components
 import { ProjectSelect } from "./select/project";
+import { UserSelect } from "./select/user";
 
-const AnalyticsFilterActions = observer(function AnalyticsFilterActions() {
-  const { selectedProjects, updateSelectedProjects } = useAnalytics();
+type Props = {
+  users?: Array<{
+    user_id: string;
+    display_name: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    avatar_url: string | null;
+  }>;
+};
+
+const AnalyticsFilterActions = observer(function AnalyticsFilterActions({ users }: Props) {
+  const { selectedProjects, selectedUsers, updateSelectedProjects, updateSelectedUsers } = useAnalytics();
   const { joinedProjectIds } = useProject();
   return (
     <div className="flex items-center justify-end gap-2">
+      {users && users.length > 0 && (
+        <UserSelect
+          value={selectedUsers}
+          onChange={(val) => {
+            updateSelectedUsers(val ?? []);
+          }}
+          users={users}
+        />
+      )}
       <ProjectSelect
         value={selectedProjects}
         onChange={(val) => {
@@ -18,14 +39,6 @@ const AnalyticsFilterActions = observer(function AnalyticsFilterActions() {
         }}
         projectIds={joinedProjectIds}
       />
-      {/* <DurationDropdown
-        buttonVariant="border-with-text"
-        value={selectedDuration}
-        onChange={(val) => {
-          updateSelectedDuration(val);
-        }}
-        dropdownArrow
-      /> */}
     </div>
   );
 });

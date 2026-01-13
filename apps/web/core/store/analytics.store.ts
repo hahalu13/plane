@@ -8,6 +8,7 @@ export interface IBaseAnalyticsStore {
   //observables
   currentTab: TAnalyticsTabsBase;
   selectedProjects: string[];
+  selectedUsers: string[];
   selectedDuration: DurationType;
   selectedCycle: string;
   selectedModule: string;
@@ -18,6 +19,7 @@ export interface IBaseAnalyticsStore {
 
   //actions
   updateSelectedProjects: (projects: string[]) => void;
+  updateSelectedUsers: (users: string[]) => void;
   updateSelectedDuration: (duration: DurationType) => void;
   updateSelectedCycle: (cycle: string) => void;
   updateSelectedModule: (module: string) => void;
@@ -29,6 +31,7 @@ export abstract class BaseAnalyticsStore implements IBaseAnalyticsStore {
   //observables
   currentTab: TAnalyticsTabsBase = "overview";
   selectedProjects: string[] = [];
+  selectedUsers: string[] = [];
   selectedDuration: DurationType = "last_30_days";
   selectedCycle: string = "";
   selectedModule: string = "";
@@ -40,6 +43,7 @@ export abstract class BaseAnalyticsStore implements IBaseAnalyticsStore {
       currentTab: observable.ref,
       selectedDuration: observable.ref,
       selectedProjects: observable,
+      selectedUsers: observable,
       selectedCycle: observable.ref,
       selectedModule: observable.ref,
       isPeekView: observable.ref,
@@ -48,6 +52,7 @@ export abstract class BaseAnalyticsStore implements IBaseAnalyticsStore {
       selectedDurationLabel: computed,
       // actions
       updateSelectedProjects: action,
+      updateSelectedUsers: action,
       updateSelectedDuration: action,
       updateSelectedCycle: action,
       updateSelectedModule: action,
@@ -67,6 +72,17 @@ export abstract class BaseAnalyticsStore implements IBaseAnalyticsStore {
       });
     } catch (error) {
       console.error("Failed to update selected project");
+      throw error;
+    }
+  };
+
+  updateSelectedUsers = (users: string[]) => {
+    try {
+      runInAction(() => {
+        this.selectedUsers = users;
+      });
+    } catch (error) {
+      console.error("Failed to update selected users");
       throw error;
     }
   };

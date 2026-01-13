@@ -64,6 +64,8 @@ export const coreRoutes: RouteConfigEntry[] = [
         // Analytics
         layout("./(all)/[workspaceSlug]/(projects)/analytics/[tabId]/layout.tsx", [
           route(":workspaceSlug/analytics/:tabId", "./(all)/[workspaceSlug]/(projects)/analytics/[tabId]/page.tsx"),
+          route(":workspaceSlug/analytics/member-gantt", "./(all)/[workspaceSlug]/(projects)/analytics/member-gantt/page.tsx"),
+          route(":workspaceSlug/analytics/time-gantt", "./(all)/[workspaceSlug]/(projects)/analytics/time-gantt/page.tsx"),
         ]),
 
         // Browse

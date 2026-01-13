@@ -13,12 +13,14 @@ interface InsightTableProps<T extends Exclude<TAnalyticsTabsBase, "overview">> {
   columnsLabels?: Record<string, string>;
   headerText: string;
   onExport?: (rows: Row<AnalyticsTableDataMap[T]>[]) => void;
+  enablePagination?: boolean;
+  pageSize?: number;
 }
 
 export function InsightTable<T extends Exclude<TAnalyticsTabsBase, "overview">>(
   props: InsightTableProps<T>
 ): React.ReactElement {
-  const { data, isLoading, columns, headerText, onExport } = props;
+  const { data, isLoading, columns, headerText, onExport, enablePagination, pageSize } = props;
   const { t } = useTranslation();
   if (isLoading) {
     return <TableLoader columns={columns} rows={5} />;
@@ -30,6 +32,8 @@ export function InsightTable<T extends Exclude<TAnalyticsTabsBase, "overview">>(
         columns={columns}
         data={data || []}
         searchPlaceholder={`${data?.length || 0} ${headerText}`}
+        enablePagination={enablePagination}
+        pageSize={pageSize}
         actions={(table: Table<AnalyticsTableDataMap[T]>) => (
           <Button
             variant="secondary"

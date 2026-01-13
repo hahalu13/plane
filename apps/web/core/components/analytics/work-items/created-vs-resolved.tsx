@@ -18,6 +18,7 @@ import { ChartLoader } from "../loaders";
 
 const analyticsService = new AnalyticsService();
 const CreatedVsResolved = observer(function CreatedVsResolved() {
+  const { t } = useTranslation();
   const {
     selectedDuration,
     selectedDurationLabel,
@@ -28,7 +29,6 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
     isEpic,
   } = useAnalytics();
   const params = useParams();
-  const { t } = useTranslation();
   const workspaceSlug = params.workspaceSlug.toString();
   const { data: createdVsResolvedData, isLoading: isCreatedVsResolvedLoading } = useSWR(
     `created-vs-resolved-${workspaceSlug}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isPeekView}-${isEpic}`,
@@ -59,7 +59,7 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
     () => [
       {
         key: "completed_issues",
-        label: "Resolved",
+        label: t("analytics.common.resolved"),
         fill: "#19803833",
         fillOpacity: 1,
         stackId: "bar-one",
@@ -70,7 +70,7 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
       },
       {
         key: "created_issues",
-        label: "Created",
+        label: t("analytics.common.created"),
         fill: "#1192E833",
         fillOpacity: 1,
         stackId: "bar-one",
@@ -80,7 +80,7 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
         strokeOpacity: 1,
       },
     ],
-    []
+    [t]
   );
 
   return (

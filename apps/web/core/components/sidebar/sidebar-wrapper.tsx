@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
+import { useTranslation } from "@plane/i18n";
 // plane helpers
 import { useOutsideClickDetector } from "@plane/hooks";
 import { PreferencesIcon } from "@plane/propel/icons";
@@ -22,6 +23,8 @@ type TSidebarWrapperProps = {
 
 export const SidebarWrapper = observer(function SidebarWrapper(props: TSidebarWrapperProps) {
   const { title, children, quickActions } = props;
+  // translation
+  const { t } = useTranslation();
   // state
   const [isCustomizeNavDialogOpen, setIsCustomizeNavDialogOpen] = useState(false);
   // store hooks
@@ -51,7 +54,7 @@ export const SidebarWrapper = observer(function SidebarWrapper(props: TSidebarWr
           <div className="flex items-center justify-between gap-2 px-2">
             <span className="text-16 text-primary font-medium pt-1">{title}</span>
             <div className="flex items-center gap-2">
-              {title === "Projects" && (
+              {title === t("sidebar.projects") && (
                 <IconButton
                   size="base"
                   variant="ghost"

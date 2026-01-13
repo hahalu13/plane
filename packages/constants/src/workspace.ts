@@ -258,7 +258,7 @@ export const WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS: Record<string, IWorkspa
   },
   analytics: {
     key: "analytics",
-    labelTranslationKey: "analytics",
+    labelTranslationKey: "sidebar.analytics",
     href: `/analytics/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
     highlight: (pathname: string, url: string) => pathname.includes(url),

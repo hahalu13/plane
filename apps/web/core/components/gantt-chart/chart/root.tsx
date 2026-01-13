@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { createPortal } from "react-dom";
 // plane imports
@@ -133,13 +133,27 @@ export const ChartViewRoot = observer(function ChartViewRoot(props: ChartViewRoo
     return currentRender.state;
   };
 
-  const handleToday = () => updateCurrentViewRenderPayload(null, currentView);
+  const handleToday = useCallback(() => {
+    updateCurrentViewRenderPayload(null, currentView);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView]);
 
   // handling the scroll positioning from left and right
   useEffect(() => {
     handleToday();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Trigger "Today" button after fullscreen mode changes to refresh the view
+  useEffect(() => {
+    if (fullScreenMode !== undefined) {
+      // Wait for DOM to update after fullscreen toggle
+      const timeoutId = setTimeout(() => {
+        handleToday();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [fullScreenMode, handleToday]);
 
   const updateItemsContainerWidth = (width: number) => {
     const scrollContainer = document.querySelector("#gantt-container") as HTMLDivElement;

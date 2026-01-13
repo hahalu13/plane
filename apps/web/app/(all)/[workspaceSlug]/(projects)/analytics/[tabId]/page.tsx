@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 import { useRouter } from "next/navigation";
 // plane package imports
@@ -47,12 +47,6 @@ function AnalyticsPage({ params }: Route.ComponentProps) {
   const ANALYTICS_TABS = useAnalyticsTabs(workspaceSlug.toString());
 
   const [selectedTab, setSelectedTab] = useState(tabId || ANALYTICS_TABS[0]?.key);
-
-  useEffect(() => {
-    if (tabId) {
-      setSelectedTab(tabId);
-    }
-  }, [tabId]);
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -116,7 +110,7 @@ function AnalyticsPage({ params }: Route.ComponentProps) {
               description={t("workspace_projects.empty_state.no_projects.description")}
               actions={[
                 {
-                  label: "Create a project",
+                  label: t("workspace_projects.create.label"),
                   onClick: () => {
                     toggleCreateProjectModal(true);
                   },
@@ -131,4 +125,5 @@ function AnalyticsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(AnalyticsPage);
+const AnalyticsPageObserver = observer(AnalyticsPage);
+export default AnalyticsPageObserver;

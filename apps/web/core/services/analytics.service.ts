@@ -82,6 +82,31 @@ export class AnalyticsService extends APIService {
       });
   }
 
+  async getUserWorkStats<T>(
+    workspaceSlug: string,
+    type?: "overview" | "members" | "distribution" | "trends" | "gantt",
+    params?: {
+      user_ids?: string;
+      project_ids?: string;
+      date_filter?: string;
+      start_date?: string;
+      end_date?: string;
+      page?: number;
+      page_size?: number;
+    }
+  ): Promise<T> {
+    return this.get(`/api/workspaces/${workspaceSlug}/user-work-stats/`, {
+      params: {
+        ...(type ? { type } : {}),
+        ...params,
+      },
+    })
+      .then((res) => res?.data)
+      .catch((err) => {
+        throw err?.response?.data;
+      });
+  }
+
   processUrl<T extends string>(
     endpoint: string,
     workspaceSlug: string,
